@@ -7,8 +7,8 @@ Deployment menggunakan frontend Nginx sebagai satu-satunya entrypoint publik pad
 - Docker Engine dan Portainer tersedia di server.
 - Server dapat mengakses SQL Server existing.
 - `backend/database/001_initial_schema.sql` sudah dijalankan.
-- `backend/database/002_contract_employee_access.sql` sudah dijalankan.
 - Tabel HRIS `dbo.hris_Employee` tersedia dan hanya dibaca aplikasi.
+- Tabel `dbo.EmployeeContracts` sudah dibuat menggunakan `backend/database/001_initial_schema.sql`.
 
 ## Deploy melalui Portainer
 
