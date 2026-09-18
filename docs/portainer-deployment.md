@@ -8,7 +8,6 @@ Deployment menggunakan frontend Nginx sebagai satu-satunya entrypoint publik pad
 - Server dapat mengakses SQL Server existing.
 - `backend/database/001_initial_schema.sql` sudah dijalankan.
 - `backend/database/002_contract_employee_access.sql` sudah dijalankan.
-- Minimal satu NIP ADMIN sudah tersedia di `ContractEmployeeAccess`.
 - Tabel HRIS `dbo.hris_Employee` tersedia dan hanya dibaca aplikasi.
 
 ## Deploy melalui Portainer

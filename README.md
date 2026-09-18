@@ -6,9 +6,8 @@ Aplikasi internal HC/HRD PT Braja Mukti Cakra untuk mencatat dan memonitor perio
 
 1. Salin `.env.example` menjadi `backend/.env`, lalu isi koneksi SQL Server dan `JWT_SECRET` minimal 32 karakter.
 2. Jalankan `backend/database/001_initial_schema.sql` pada database HRIS untuk membuat `EmployeeContracts`.
-3. Jalankan `backend/database/002_contract_employee_access.sql` untuk membuat `ContractEmployeeAccess`, lalu tambahkan NIP ADMIN pertama secara manual.
-4. Jalankan `npm install`, `npm install --prefix backend`, dan `npm install --prefix frontend`.
-5. Jalankan `npm run dev` dari root project.
+3. Jalankan `npm install`, `npm install --prefix backend`, dan `npm install --prefix frontend`.
+4. Jalankan `npm run dev` dari root project.
 
 ## API
 
@@ -20,14 +19,12 @@ Contracts: `POST /api/contracts`, `GET /api/contracts`, `GET /api/contracts/:id`
 
 Dashboard: `GET /api/dashboard/summary`.
 
-Administration: `GET /api/admin/users`, `GET /api/admin/hris-employees?search=`, `POST /api/admin/users`, `PATCH /api/admin/users/:nip`.
-
 ## Frontend routes
 
 Public: `/login` dan `/health`.
 
-Protected: `/dashboard`, `/contracts/new`, `/contracts/:id`, `/contracts/:id/edit`, dan `/admin/users` (ADMIN only).
+Protected: `/dashboard`, `/contracts/new`, `/contracts/:id`, dan `/contracts/:id/edit`.
 
 ## Catatan security
 
-Login memakai NIP dan kode tanggal lahir `DDMMYY`; BirthDate tidak pernah dikirim ke browser dan HRIS hanya dibaca. Session memakai cookie HTTP-only `bmc_contract_access_token`, berbeda dari Nomor Surat BMC. Pada setiap authenticated request, employee aktif dan access table dicek ulang sehingga user nonaktif kehilangan akses walaupun JWT lama belum kedaluwarsa.
+Login memakai NIP dan kode tanggal lahir `DDMMYY`; BirthDate tidak pernah dikirim ke browser dan HRIS hanya dibaca. Session memakai cookie HTTP-only `bmc_contract_access_token`, berbeda dari Nomor Surat BMC. Pada setiap authenticated request, employee aktif dicek ulang sehingga user nonaktif kehilangan akses walaupun JWT lama belum kedaluwarsa.
