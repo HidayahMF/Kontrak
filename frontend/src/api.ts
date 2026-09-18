@@ -1,4 +1,4 @@
-import type { AuthUser, Contract, Employee, Page, Summary } from './types';
+import type { AuthUser, Contract, Employee, ManagedUser, Page, Summary, Role } from './types';
 
 const base = import.meta.env.VITE_API_URL ?? '/api';
 
@@ -30,4 +30,8 @@ export const api = {
   create: (input: { nip: string; startDate: string; endDate: string }) => request<Contract>('/contracts', { method: 'POST', body: JSON.stringify(input) }),
   update: (id: number, input: { nip: string; startDate: string; endDate: string }) => request<Contract>(`/contracts/${id}`, { method: 'PATCH', body: JSON.stringify(input) }),
   remove: (id: number) => request<null>(`/contracts/${id}`, { method: 'DELETE' }),
+  users: () => request<ManagedUser[]>('/admin/users'),
+  hris: (search: string) => request<Employee[]>(`/admin/hris-employees?search=${encodeURIComponent(search)}`),
+  grant: (input: { nip: string; role: Role }) => request<null>('/admin/users', { method: 'POST', body: JSON.stringify(input) }),
+  access: (nip: string, input: { role?: Role; isActive?: boolean }) => request<null>(`/admin/users/${encodeURIComponent(nip)}`, { method: 'PATCH', body: JSON.stringify(input) }),
 };

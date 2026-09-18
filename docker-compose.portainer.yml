@@ -8,7 +8,7 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       PORT: ${PORT:-3000}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3005}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3004}
       DB_SERVER: ${DB_SERVER:?DB_SERVER is required}
       DB_PORT: ${DB_PORT:-1433}
       DB_DATABASE: ${DB_DATABASE:?DB_DATABASE is required}
@@ -46,7 +46,7 @@ services:
       context: .
       dockerfile: docker/frontend.Dockerfile
     ports:
-      - "${APP_PORT:-3005}:80"
+      - "${APP_PORT:-3004}:80"
     depends_on:
       backend:
         condition: service_healthy

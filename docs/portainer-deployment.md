@@ -1,6 +1,6 @@
 # Deployment Kontrak Karyawan di Portainer
 
-Deployment menggunakan frontend Nginx sebagai satu-satunya entrypoint publik pada host port `3005`. Nginx meneruskan `/api/` dan `/health` ke backend internal pada port `3000`. Tidak ada port backend yang dipublish ke host.
+Deployment menggunakan frontend Nginx sebagai satu-satunya entrypoint publik pada host port `3004`. Nginx meneruskan `/api/` dan `/health` ke backend internal pada port `3000`. Tidak ada port backend yang dipublish ke host.
 
 ## Prasyarat
 
@@ -9,6 +9,7 @@ Deployment menggunakan frontend Nginx sebagai satu-satunya entrypoint publik pad
 - `backend/database/001_initial_schema.sql` sudah dijalankan.
 - Tabel HRIS `dbo.hris_Employee` tersedia dan hanya dibaca aplikasi.
 - Tabel `dbo.EmployeeContracts` sudah dibuat menggunakan `backend/database/001_initial_schema.sql`.
+- Tabel `dbo.ContractEmployeeAccess` sudah dibuat menggunakan `backend/database/002_contract_employee_access.sql` dan NIP `3490` sudah terdaftar sebagai `ADMIN`.
 
 ## Deploy melalui Portainer
 
@@ -17,14 +18,14 @@ Deployment menggunakan frontend Nginx sebagai satu-satunya entrypoint publik pad
 3. Deploy dari Git repository atau gunakan Web Editor.
 4. Gunakan file `docker-compose.portainer.yml`.
 5. Masukkan environment variables dari `portainer.env.example` pada bagian Environment variables Portainer.
-6. Pastikan `APP_PORT=3005` dan `FRONTEND_URL=http://<SERVER-IP>:3005`.
+6. Pastikan `APP_PORT=3004` dan `FRONTEND_URL=http://<SERVER-IP>:3004`.
 7. Isi `DB_*` dan `JWT_SECRET`. Jangan menaruh credential asli di repository atau compose file.
 8. Deploy stack.
-9. Buka `http://<SERVER-IP>:3005`.
+9. Buka `http://<SERVER-IP>:3004`.
 
 ## Arsitektur
 
-- `frontend` dipublish sebagai `3005:80`.
+- `frontend` dipublish sebagai `3004:80`.
 - `backend` hanya expose port internal `3000` pada network Docker.
 - Nginx meneruskan `/api/` ke `http://backend:3000`.
 - Nginx meneruskan `/health` ke endpoint backend `/health`.
@@ -43,8 +44,8 @@ docker compose --env-file portainer.env -f docker-compose.portainer.yml ps
 Verifikasi:
 
 ```text
-http://<SERVER-IP>:3005
-http://<SERVER-IP>:3005/health
+http://<SERVER-IP>:3004
+http://<SERVER-IP>:3004/health
 ```
 
 ## Catatan cookie
