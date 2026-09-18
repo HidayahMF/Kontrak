@@ -4,6 +4,8 @@ CREATE TABLE dbo.EmployeeContracts (
     Id BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     NIP VARCHAR(50) NOT NULL,
     EmployeeNameSnapshot NVARCHAR(200) NOT NULL,
+    DepartmentSnapshot NVARCHAR(200) NULL,
+    ContractNumber VARCHAR(100) NULL,
     ContractStartDate DATE NOT NULL,
     ContractEndDate DATE NOT NULL,
     CreatedByNIP VARCHAR(50) NOT NULL,

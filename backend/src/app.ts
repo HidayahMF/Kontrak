@@ -2,6 +2,7 @@ import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
+import multer from 'multer';
 import 'dotenv/config';
 import { getPool } from './config/database';
 import { authConfig, validateAuthConfig } from './config/auth';
@@ -11,6 +12,7 @@ import { searchEmployees } from './services/employeeService';
 import * as contracts from './services/contractService';
 import * as users from './services/userAccessService';
 import { Role } from './types/auth';
+import { exportWorkbook, importWorkbook } from './services/excelService';
 
 validateAuthConfig();
 const app = express();
@@ -18,6 +20,7 @@ app.set('trust proxy', 1);
 app.use(cors({ origin: process.env.FRONTEND_URL ?? 'http://localhost:5173', credentials: true }));
 app.use(express.json({ limit: '32kb' }));
 app.use(cookieParser());
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 const send = (res: Response, data: unknown) => res.json({ success: true, data });
 
 app.get('/health', async (_req, res) => {
@@ -51,11 +54,13 @@ app.get('/api/contracts', requireAuth, async (req, res, next) => {
   try { const page = Math.max(1, Number(req.query.page) || 1), limit = Math.min(20, Math.max(1, Number(req.query.limit) || 20)); send(res, await contracts.list({ page, limit, search: String(req.query.search ?? ''), status: String(req.query.status ?? ''), startDate: req.query.startDate ? String(req.query.startDate) : undefined, endDate: req.query.endDate ? String(req.query.endDate) : undefined })); }
   catch (e) { next(e); }
 });
-app.post('/api/contracts', requireAuth, requireRole('ADMIN', 'HC'), async (req, res, next) => { try { const { nip, startDate, endDate } = req.body ?? {}; if (typeof nip !== 'string' || !/^[A-Za-z0-9-]{1,50}$/.test(nip) || typeof startDate !== 'string' || typeof endDate !== 'string') return res.status(400).json({ success: false, message: 'Data kontrak belum lengkap.' }); send(res, await contracts.create({ nip, startDate, endDate }, req.user!.nip)); } catch (e) { next(e); } });
+app.post('/api/contracts', requireAuth, requireRole('ADMIN', 'HC'), async (req, res, next) => { try { const { nip, department, startDate, endDate, contractNumber } = req.body ?? {}; if (typeof nip !== 'string' || !/^[A-Za-z0-9-]{1,50}$/.test(nip) || typeof startDate !== 'string' || typeof endDate !== 'string' || (department !== undefined && typeof department !== 'string') || (contractNumber !== undefined && typeof contractNumber !== 'string')) return res.status(400).json({ success: false, message: 'Data kontrak belum lengkap.' }); send(res, await contracts.create({ nip, department, startDate, endDate, contractNumber }, req.user!.nip)); } catch (e) { next(e); } });
 app.get('/api/contracts/:id', requireAuth, async (req, res, next) => { try { const id = Number(req.params.id); if (!Number.isInteger(id) || id < 1) return res.status(400).json({ success: false, message: 'ID kontrak tidak valid.' }); const item = await contracts.get(id); return item ? send(res, item) : res.status(404).json({ success: false, message: 'Data kontrak tidak ditemukan.' }); } catch (e) { next(e); } });
-app.patch('/api/contracts/:id', requireAuth, requireRole('ADMIN', 'HC'), async (req, res, next) => { try { const id = Number(req.params.id), { nip, startDate, endDate } = req.body ?? {}; if (!Number.isInteger(id) || id < 1 || typeof nip !== 'string' || !/^[A-Za-z0-9-]{1,50}$/.test(nip) || typeof startDate !== 'string' || typeof endDate !== 'string') return res.status(400).json({ success: false, message: 'Data kontrak tidak valid.' }); const item = await contracts.update(id, { nip, startDate, endDate }, req.user!.nip); return item ? send(res, item) : res.status(404).json({ success: false, message: 'Data kontrak tidak ditemukan.' }); } catch (e) { next(e); } });
+app.patch('/api/contracts/:id', requireAuth, requireRole('ADMIN', 'HC'), async (req, res, next) => { try { const id = Number(req.params.id), { nip, department, startDate, endDate, contractNumber } = req.body ?? {}; if (!Number.isInteger(id) || id < 1 || typeof nip !== 'string' || !/^[A-Za-z0-9-]{1,50}$/.test(nip) || typeof startDate !== 'string' || typeof endDate !== 'string' || (department !== undefined && typeof department !== 'string') || (contractNumber !== undefined && typeof contractNumber !== 'string')) return res.status(400).json({ success: false, message: 'Data kontrak tidak valid.' }); const item = await contracts.update(id, { nip, department, startDate, endDate, contractNumber }, req.user!.nip); return item ? send(res, item) : res.status(404).json({ success: false, message: 'Data kontrak tidak ditemukan.' }); } catch (e) { next(e); } });
 app.delete('/api/contracts/:id', requireAuth, requireRole('ADMIN'), async (req, res, next) => { try { const id = Number(req.params.id); if (!Number.isInteger(id) || id < 1) return res.status(400).json({ success: false, message: 'ID kontrak tidak valid.' }); if (!await contracts.remove(id)) return res.status(404).json({ success: false, message: 'Data kontrak tidak ditemukan.' }); send(res, null); } catch (e) { next(e); } });
 app.get('/api/dashboard/summary', requireAuth, async (_req, res, next) => { try { send(res, await contracts.summary()); } catch (e) { next(e); } });
+app.post('/api/contracts/import', requireAuth, requireRole('ADMIN', 'HC'), upload.single('file'), async (req, res, next) => { try { if (!req.file) return res.status(400).json({ success: false, message: 'File Excel wajib dipilih.' }); send(res, await importWorkbook(req.file.buffer, req.user!.nip)); } catch (e) { next(e); } });
+app.get('/api/contracts/export', requireAuth, requireRole('ADMIN', 'HC'), async (_req, res, next) => { try { const buffer = await exportWorkbook(); res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); res.setHeader('Content-Disposition', 'attachment; filename="laporan-kontrak.xlsx"'); res.send(buffer); } catch (e) { next(e); } });
 
 app.get('/api/admin/users', requireAuth, requireRole('ADMIN'), async (_req, res, next) => { try { send(res, await users.listAccess()); } catch (e) { next(e); } });
 app.get('/api/admin/hris-employees', requireAuth, requireRole('ADMIN'), async (req, res, next) => { try { send(res, await users.searchActiveEmployees(String(req.query.search ?? ''))); } catch (e) { next(e); } });

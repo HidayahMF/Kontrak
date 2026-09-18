@@ -9,6 +9,8 @@ Aplikasi internal HC/HRD PT Braja Mukti Cakra untuk mencatat dan memonitor perio
 3. Jalankan `npm install`, `npm install --prefix backend`, dan `npm install --prefix frontend`.
 4. Jalankan `npm run dev` dari root project.
 
+Import/export Excel tersedia di Dashboard. Gunakan template `docs/excel-import-template.csv`; kolom nomor kontrak sebaiknya diformat sebagai Text agar nomor seperti `0187` dan `097` tetap mempertahankan nol di depan.
+
 ## API
 
 Auth: `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`.

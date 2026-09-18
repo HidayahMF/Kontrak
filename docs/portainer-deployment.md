@@ -9,6 +9,7 @@ Deployment menggunakan frontend Nginx sebagai satu-satunya entrypoint publik pad
 - `backend/database/001_initial_schema.sql` sudah dijalankan.
 - Tabel HRIS `dbo.hris_Employee` tersedia dan hanya dibaca aplikasi.
 - Tabel `dbo.EmployeeContracts` sudah dibuat menggunakan `backend/database/001_initial_schema.sql`.
+- Migration `backend/database/003_contract_optional_fields.sql` sudah dijalankan untuk kolom departemen dan nomor kontrak.
 - Tabel `dbo.ContractEmployeeAccess` sudah dibuat menggunakan `backend/database/002_contract_employee_access.sql` dan NIP `3490` sudah terdaftar sebagai `ADMIN`.
 
 ## Deploy melalui Portainer
