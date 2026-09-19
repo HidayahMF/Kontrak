@@ -51,7 +51,7 @@ app.get('/api/auth/me', requireAuth, (req, res) => send(res, { user: req.user })
 app.get('/api/employees', requireAuth, async (req, res, next) => { try { send(res, await searchEmployees(String(req.query.search ?? ''))); } catch (e) { next(e); } });
 
 app.get('/api/contracts', requireAuth, async (req, res, next) => {
-  try { const page = Math.max(1, Number(req.query.page) || 1), limit = Math.min(20, Math.max(1, Number(req.query.limit) || 20)); send(res, await contracts.list({ page, limit, search: String(req.query.search ?? ''), status: String(req.query.status ?? ''), startDate: req.query.startDate ? String(req.query.startDate) : undefined, endDate: req.query.endDate ? String(req.query.endDate) : undefined })); }
+  try { const page = Math.max(1, Number(req.query.page) || 1), limit = Math.min(20, Math.max(1, Number(req.query.limit) || 20)); send(res, await contracts.list({ page, limit, search: String(req.query.search ?? ''), status: String(req.query.status ?? ''), department: req.query.department ? String(req.query.department) : undefined, startDate: req.query.startDate ? String(req.query.startDate) : undefined, endDate: req.query.endDate ? String(req.query.endDate) : undefined })); }
   catch (e) { next(e); }
 });
 app.get('/api/contracts/next-number', requireAuth, requireRole('ADMIN', 'HC'), async (req, res, next) => { try { send(res, { contractNumber: await contracts.nextContractNumber(String(req.query.startDate ?? '')) }); } catch (e) { next(e); } });

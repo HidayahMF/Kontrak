@@ -12,7 +12,7 @@ import {
 import { Link } from "react-router-dom";
 import { api } from "../api";
 import { AuthUser, Page, Summary } from "../types";
-import { ErrorMessage, Spinner } from "../components/States";
+import { ConfirmDialog, ErrorMessage, Spinner } from "../components/States";
 
 const date = (value: string) =>
   new Date(`${value.slice(0, 10)}T00:00:00`).toLocaleDateString("id-ID");
@@ -22,18 +22,26 @@ export function Dashboard() {
   const [data, setData] = useState<Page>();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
+  const [department, setDepartment] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [page, setPage] = useState(1);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<AuthUser>();
+  const [exporting, setExporting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<{
+    id: number;
+    name: string;
+  }>();
   const load = async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page), limit: "20" });
       if (search) params.set("search", search);
       if (status) params.set("status", status);
+      if (department) params.set("department", department);
       if (startDate) params.set("startDate", startDate);
       if (endDate) params.set("endDate", endDate);
       const [nextSummary, nextData] = await Promise.all([
@@ -54,24 +62,27 @@ export function Dashboard() {
   useEffect(() => {
     const timer = setTimeout(load, 280);
     return () => clearTimeout(timer);
-  }, [page, search, status, startDate, endDate]);
+  }, [page, search, status, department, startDate, endDate]);
   const remove = async (id: number, name: string) => {
-    if (
-      !confirm(
-        `Hapus kontrak ${name}? Data yang dihapus tidak dapat dikembalikan.`,
-      )
-    )
-      return;
+    setPendingDelete({ id, name });
+  };
+  const confirmRemove = async () => {
+    if (!pendingDelete) return;
+    setDeleting(true);
     try {
-      await api.remove(id);
+      await api.remove(pendingDelete.id);
+      setPendingDelete(undefined);
       await load();
     } catch (caught) {
       setError(
         caught instanceof Error ? caught.message : "Kontrak gagal dihapus.",
       );
+    } finally {
+      setDeleting(false);
     }
   };
   const exportFile = async () => {
+    setExporting(true);
     try {
       const blob = await api.exportExcel();
       const url = URL.createObjectURL(blob);
@@ -84,11 +95,14 @@ export function Dashboard() {
       setError(
         caught instanceof Error ? caught.message : "Export Excel gagal.",
       );
+    } finally {
+      setExporting(false);
     }
   };
   const reset = () => {
     setSearch("");
     setStatus("");
+    setDepartment("");
     setStartDate("");
     setEndDate("");
     setPage(1);
@@ -116,7 +130,7 @@ export function Dashboard() {
         <div className="flex flex-wrap gap-2">
           <button onClick={exportFile} className="btn-secondary">
             <Download size={16} />
-            Export Excel
+            {exporting ? "Mengekspor..." : "Export Excel"}
           </button>
           <Link to="/contracts/new" className="btn-primary">
             <Plus size={16} />
@@ -177,6 +191,21 @@ export function Dashboard() {
             <option>Aktif</option>
             <option>Segera Berakhir</option>
             <option>Berakhir</option>
+            <option>Data belum lengkap</option>
+          </select>
+          <select
+            value={department}
+            onChange={(e) => {
+              setDepartment(e.target.value);
+              setPage(1);
+            }}
+            className="field"
+          >
+            <option value="">Semua Departemen</option>
+            <option>Produksi</option>
+            <option>Maintenance</option>
+            <option>Procurement</option>
+            <option>Quality</option>
           </select>
           <input
             type="date"
@@ -202,6 +231,15 @@ export function Dashboard() {
           </button>
         </div>
       </section>
+      {pendingDelete && (
+        <ConfirmDialog
+          title="Hapus kontrak?"
+          message={`Hapus kontrak ${pendingDelete.name}? Data yang dihapus tidak dapat dikembalikan.`}
+          onConfirm={confirmRemove}
+          onCancel={() => setPendingDelete(undefined)}
+          loading={deleting}
+        />
+      )}
       <section className="border border-bmc-border bg-white">
         {loading ? (
           <div className="p-8">
