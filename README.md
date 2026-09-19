@@ -9,6 +9,8 @@ Aplikasi internal HC/HRD PT Braja Mukti Cakra untuk mencatat dan memonitor perio
 3. Jalankan `npm install`, `npm install --prefix backend`, dan `npm install --prefix frontend`.
 4. Jalankan `npm run dev` dari root project.
 
+Untuk deployment Docker/Portainer dan akses melalui `http://kontrak.lab.bmc.co.id`, lihat `docs/portainer-deployment.md`. Frontend menggunakan API relatif `/api`, sehingga browser mengakses backend melalui origin domain yang sama; URL API tidak di-hardcode ke IP atau port backend.
+
 Import/export Excel tersedia di Dashboard. Format import utama adalah kolom A `NIP`, B `Nama`, C `Departemen`, D `Awal Kontrak`, E `Akhir Kontrak`, dan F `Nomor Kontrak` (opsional). Format A-E tanpa nomor kontrak juga diterima. Kolom nomor kontrak sebaiknya diformat sebagai Text agar nomor seperti `0187` dan `097` tetap mempertahankan nol di depan.
 
 ## API
